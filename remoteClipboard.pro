@@ -7,6 +7,7 @@ TARGET = RemoteClipboard
 DEPENDPATH += . gui
 INCLUDEPATH += /home/sicus/proggen/remoteClipboard/. .
 DESTDIR = bin/
+QT      += network
 
 # Input
 HEADERS += MainWindow.h NetworkConnection.h global.h

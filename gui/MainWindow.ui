@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>683</width>
-    <height>442</height>
+    <width>669</width>
+    <height>446</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Remote Clipboard</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -46,7 +46,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="LocalClipboard"/>
+        <widget class="QTextEdit" name="LocalClipboard">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="Line" name="line_4">
@@ -56,19 +60,23 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="LocalSelectionTitle">
          <property name="text">
           <string>Selection</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="LocalSelection"/>
+        <widget class="QTextEdit" name="LocalSelection">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
     </item>
-    <item>
+    <item row="1" column="2">
      <widget class="QFrame" name="frame_2">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -78,7 +86,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="RemoteTextLabel">
          <property name="text">
           <string>Remote</string>
          </property>
@@ -99,7 +107,21 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="RemoteClipboard"/>
+        <widget class="QTextEdit" name="RemoteClipboard">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="CopyClipboardButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Copy to Local Clipboard</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="Line" name="line_3">
@@ -109,23 +131,37 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="RemoteSelectionTitle">
          <property name="text">
           <string>Selection</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="RemoteSelection"/>
+        <widget class="QTextEdit" name="RemoteSelection">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="CopyButton">
+        <widget class="QPushButton" name="CopySelectionButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Copy to Local Clipboard</string>
          </property>
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="ServerLabel">
+      <property name="text">
+       <string>Server: Not Running</string>
+      </property>
      </widget>
     </item>
    </layout>
@@ -135,7 +171,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>683</width>
+     <width>669</width>
      <height>25</height>
     </rect>
    </property>
@@ -150,7 +186,9 @@
      <string>&amp;Network</string>
     </property>
     <addaction name="actionStart_Server"/>
+    <addaction name="actionS_top_Server"/>
     <addaction name="action_Connect_to_Server"/>
+    <addaction name="actionDisconnect_from_Server"/>
    </widget>
    <addaction name="menuMain"/>
    <addaction name="menuNetwork"/>
@@ -169,6 +207,22 @@
   <action name="action_Connect_to_Server">
    <property name="text">
     <string>&amp;Connect to Server</string>
+   </property>
+  </action>
+  <action name="actionS_top_Server">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>S&amp;top Server</string>
+   </property>
+  </action>
+  <action name="actionDisconnect_from_Server">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disconnect &amp;from Server</string>
    </property>
   </action>
  </widget>
