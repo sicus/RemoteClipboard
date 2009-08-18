@@ -50,6 +50,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>HostnameLE</tabstop>
+  <tabstop>PortLE</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

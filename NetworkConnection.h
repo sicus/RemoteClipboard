@@ -4,9 +4,9 @@
 #include <QTcpServer>
 #include <QByteArray>
 
-// Protocol
+#include "global.h"
 
-#define DEFAULT_PORT 8874
+// Protocol
 
 // Operating System
 const unsigned char OS_UNKNOWN = 0;
@@ -63,10 +63,14 @@ class NetworkConnection : public QObject
 		bool disconnectFromClient();
 		bool sendMessage(unsigned int type, QByteArray data);
 
+	public slots:
+		void newConnection();
+
 	protected:
-		QTcpServer* m_tcpServer;
+		QTcpServer m_tcpServer;
 		QTcpSocket* m_tcpSocket;
 		unsigned int m_port;
+		bool m_server;
 };
 
 #endif

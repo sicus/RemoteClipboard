@@ -2,9 +2,9 @@
 
 NetworkConnection::NetworkConnection(QObject* parent, int port)
 {
-	m_tcpServer = NULL;
 	m_tcpSocket = NULL;
 	m_port      = port;
+	m_server    = false;
 }
 
 void NetworkConnection::setPort(int port)
@@ -29,11 +29,20 @@ bool NetworkConnection::isServerOpen()
 
 bool NetworkConnection::startServer()
 {
-	return false;
+	if(m_tcpServer.listen(QHostAddress::Any,m_port))
+	{
+		connect(&m_tcpServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
+		m_server = true;
+		return true;
+	}
+	else
+		return false;
 }
 
 bool NetworkConnection::stopServer()
 {
+	m_tcpServer.close();
+	m_server = false;
 	return false;
 }
 
@@ -44,10 +53,18 @@ bool NetworkConnection::connectToClient(QString host, int port)
 
 bool NetworkConnection::disconnectFromClient()
 {
+	if(m_server)
+		startServer();
 	return false;
 }
 
 bool NetworkConnection::sendMessage(unsigned int type, QByteArray data)
 {
 	return false;
+}
+
+void NetworkConnection::newConnection()
+{
+	m_tcpSocket = m_tcpServer.nextPendingConnection();
+	m_tcpServer.close();
 }

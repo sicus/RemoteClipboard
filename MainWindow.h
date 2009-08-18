@@ -5,10 +5,16 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QTextEdit>
+#include <QDialog>
+#include <QMessageBox>
 
 #include "global.h"
-#include "ui_MainWindow.h"
 #include "NetworkConnection.h"
+
+#include "ui_MainWindow.h"
+#include "ui_ConnectDlg.h"
+#include "ui_StartServerDlg.h"
+
 
 class MainWindow : public QMainWindow
 {
@@ -25,7 +31,7 @@ class MainWindow : public QMainWindow
 		void disconnectHost();
 	protected:
 		Ui::MainWindow*    m_mw;
-		NetworkConnection* m_nc;
+		NetworkConnection  m_nc;
 		QClipboard*        m_clipboard;
 		QString            m_hostname;
 };

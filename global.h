@@ -1,6 +1,8 @@
 #ifndef GLOBALS
 #define GLOBALS
 
+#define DEFAULT_PORT 8874
+
 #ifdef linux
 const int OPERATING_SYSTEM = 1;
 #elif defined WIN32
