@@ -18,6 +18,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	m_idSend = false;
 	m_server = false;
 
+	m_serverDlgUi.setupUi(&m_serverDlg);
+	m_connectDlgUi.setupUi(&m_connectDlg);
+
 	if(OPERATING_SYSTEM == OS_WIN32)
 	{
 		m_mw->LocalSelection->hide();
@@ -65,23 +68,21 @@ void MainWindow::clipboardChanged(QClipboard::Mode mode)
 
 void MainWindow::startServer()
 {
-	Ui::StartServerDlg csDlg;
-	QDialog dlg;
-	csDlg.setupUi(&dlg);
+	
 	int port;
-	csDlg.PortLE->setText(QString::number(DEFAULT_PORT));
-	if(dlg.exec() == QDialog::Accepted)
+	m_serverDlgUi.PortLE->setText(QString::number(DEFAULT_PORT));
+	if(m_serverDlg.exec() == QDialog::Accepted)
 	{
-		m_hostname = csDlg.HostnameLE->text();
+		m_hostname = m_serverDlgUi.HostnameLE->text();
 		if(m_hostname.size() <= 0)
 			m_hostname = "Unknown";
 
-		if(csDlg.PortLE->text().isEmpty())
+		if(m_serverDlgUi.PortLE->text().isEmpty())
 			port = DEFAULT_PORT;
 		else
 		{
 			bool ok;
-			port = csDlg.PortLE->text().toInt(&ok);
+			port = m_serverDlgUi.PortLE->text().toInt(&ok);
 			if(!ok)
 				port = DEFAULT_PORT;
 		}
@@ -117,24 +118,23 @@ void MainWindow::stopServer()
 
 void MainWindow::connectHost()
 {
-	Ui::ConnectDlg csDlg;
-	QDialog dlg;
-	csDlg.setupUi(&dlg);
 	int port;
-	csDlg.PortLE->setText(QString::number(DEFAULT_PORT));
-	if(dlg.exec() == QDialog::Accepted)
+
+	m_connectDlgUi.PortLE->setText(QString::number(DEFAULT_PORT));
+	
+	if(m_connectDlg.exec() == QDialog::Accepted)
 	{
-		m_hostname = csDlg.ClientnameLE->text();
-		QString host = csDlg.HostLE->text();
+		m_hostname = m_connectDlgUi.ClientnameLE->text();
+		QString host = m_connectDlgUi.HostLE->text();
 		if(m_hostname.size() <= 0)
 			m_hostname = "Unknown";
 
-		if(csDlg.PortLE->text().isEmpty())
+		if(m_connectDlgUi.PortLE->text().isEmpty())
 			port = DEFAULT_PORT;
 		else
 		{
 			bool ok;
-			port = csDlg.PortLE->text().toInt(&ok);
+			port = m_connectDlgUi.PortLE->text().toInt(&ok);
 			if(!ok)
 				port = DEFAULT_PORT;
 		}

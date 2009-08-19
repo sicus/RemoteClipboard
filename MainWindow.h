@@ -50,6 +50,11 @@ class MainWindow : public QMainWindow
 		QString            m_hostname;
 		bool               m_idSend;
 		bool               m_server;
+
+		Ui::StartServerDlg m_serverDlgUi;
+		Ui::ConnectDlg     m_connectDlgUi;
+		QDialog            m_serverDlg;
+		QDialog            m_connectDlg;
 };
 
 #endif

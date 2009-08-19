@@ -18,12 +18,19 @@ NetworkConnection::NetworkConnection(QObject* parent, int port)
 
 NetworkConnection::~NetworkConnection()
 {
-	if(m_tcpSocket && m_tcpSocket->isOpen())
-	{
-		disconnect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
-		disconnect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-		m_tcpSocket->close();
-	}
+// 	if(m_tcpSocket && m_tcpSocket->isOpen())
+// 	{
+// 		disconnect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
+// 		disconnect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+// 		m_tcpSocket->close();
+// 	}
+// 	if(m_tcpSocket)
+// 	{
+// 		delete m_tcpSocket;
+// 		m_tcpSocket = NULL;
+// 	}
+	disconnectFromClient();
+	stopServer();
 	disconnect(&m_tcpServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
 }
 
@@ -51,7 +58,7 @@ bool NetworkConnection::isServerOpen()
 
 bool NetworkConnection::startServer()
 {
-	if(m_tcpServer.listen(QHostAddress::Any,m_port))
+	if(!m_tcpServer.isListening() && m_tcpServer.listen(QHostAddress::Any,m_port))
 	{
 		m_server = true;
 		return true;
@@ -140,6 +147,7 @@ bool NetworkConnection::sendMessage(unsigned int type, QByteArray data)
 	header.OperatingSystem  = OPERATING_SYSTEM;
 	header.DataSize         = data.size();
 	header.TransmissionType = type;
+	memcpy(header.ProtocolIdentifier,PROTOCOL_VERSION,5);
 	QByteArray toSend;
 	toSend.clear();
 	toSend.append((char*)&header,sizeof(RC_ProtocolHeader));
@@ -176,6 +184,11 @@ void NetworkConnection::dataResceived()
 	{
 		m_tcpSocket->readLine((char*)&header,sizeof(RC_ProtocolHeader)+1);
 		bytesRead = 0;
+		if( memcmp(header.ProtocolIdentifier,PROTOCOL_VERSION,5) )
+		{
+			disconnectFromClient();
+			return;
+		}
 	}
 		
 	if(header.DataSize > 0)

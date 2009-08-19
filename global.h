@@ -10,6 +10,7 @@
 #define GLOBALS
 
 #define DEFAULT_PORT 8874
+const char PROTOCOL_VERSION[] = { 'R', 'C','P',0x01,0x00 };
 
 // Operating System
 const unsigned char OS_UNKNOWN = 0;

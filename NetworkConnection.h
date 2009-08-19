@@ -25,6 +25,7 @@ const unsigned char TT_LOGOUT          = 3;
 
 struct RC_ProtocolHeader
 {
+	char          ProtocolIdentifier[5];
 	unsigned char TransmissionType;
 	unsigned char OperatingSystem;
 	unsigned int  DataSize;
