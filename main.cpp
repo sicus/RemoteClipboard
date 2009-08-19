@@ -1,3 +1,12 @@
+/*****************************
+** File: main.cpp
+** Author: Markus Biggel
+** Date: 18.08.2009
+** Project: Remote Clipboard
+** Licence: GPL-V3
+******************************/
+
+
 #include <stdio.h>
 #include <QApplication>
 #include "global.h"

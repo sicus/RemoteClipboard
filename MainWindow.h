@@ -1,3 +1,11 @@
+/*****************************
+** File: MainWindow.h
+** Author: Markus Biggel
+** Date: 18.08.2009
+** Project: Remote Clipboard
+** Licence: GPL-V3
+******************************/
+
 #ifndef MAINWINDOW_HEADER
 #define MAINWINDOW_HEADER
 
@@ -29,11 +37,19 @@ class MainWindow : public QMainWindow
 		void stopServer();
 		void connectHost();
 		void disconnectHost();
+		void messageRecived(QString data, int type, int os);
+		void disconnected();
+		void connected();
+		void copySelectionToClipboard();
+		void copyClipboardToClipboard();
+
 	protected:
 		Ui::MainWindow*    m_mw;
 		NetworkConnection  m_nc;
 		QClipboard*        m_clipboard;
 		QString            m_hostname;
+		bool               m_idSend;
+		bool               m_server;
 };
 
 #endif

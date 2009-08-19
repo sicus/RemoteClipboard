@@ -1,17 +1,21 @@
+/*****************************
+** File: NetworkConnection.h
+** Author: Markus Biggel
+** Date: 18.08.2009
+** Project: Remote Clipboard
+** Licence: GPL-V3
+******************************/
+
 #ifndef NETWORK_CONNECTION_HEADER
 #define NETWORK_CONNECTION_HEADER
 
 #include <QTcpServer>
+#include <QTcpSocket>
 #include <QByteArray>
 
 #include "global.h"
 
 // Protocol
-
-// Operating System
-const unsigned char OS_UNKNOWN = 0;
-const unsigned char OS_LINUX   = 1;
-const unsigned char OS_WIN32   = 2;
 
 // Transmission type
 const unsigned char TT_CLIPBOARD_ENTRY = 0;
@@ -53,6 +57,7 @@ class NetworkConnection : public QObject
 	Q_OBJECT
 	public:
 		NetworkConnection(QObject* parent = 0, int port = DEFAULT_PORT);
+		~NetworkConnection();
 		void setPort(int port);
 		int getPort();
 		bool hasClientConnection();
@@ -65,11 +70,19 @@ class NetworkConnection : public QObject
 
 	public slots:
 		void newConnection();
+		void dataResceived();
+		void disconnected();
+
+	signals:
+		void messageRecived(QString, int, int);
+		void disconnectedFromHost();
+		void connectedToHost();
 
 	protected:
 		QTcpServer m_tcpServer;
 		QTcpSocket* m_tcpSocket;
 		unsigned int m_port;
+		QString  m_hostname;
 		bool m_server;
 };
 
