@@ -14,44 +14,7 @@
 #include <QByteArray>
 
 #include "global.h"
-
-// Protocol
-
-// Transmission type
-const unsigned char TT_CLIPBOARD_ENTRY = 0;
-const unsigned char TT_SELECTION_ENTRY = 1;
-const unsigned char TT_LOGIN           = 2;
-const unsigned char TT_LOGOUT          = 3;
-
-struct RC_ProtocolHeader
-{
-	char          ProtocolIdentifier[5];
-	unsigned char TransmissionType;
-	unsigned char OperatingSystem;
-	unsigned int  DataSize;
-};
-
-// Transmission Typs:
-//
-// Clipboard Entry:
-// Protocolheader + bytefield
-// bytefiel -> Clipboard Data
-// DataSize = length of Data in Bytes
-//
-// Selection Entry:
-// Linux Only
-// Protocolheader + bytefield
-// bytefiel -> Selection Data
-// DataSize = length of Data in Bytes
-//
-// Login:
-// Protocolheader + bytefield
-// bytefiel -> Hostname
-// DataSize = length of Data in Bytes
-//
-// Logout:
-// Protocolheader
-// DataSize = 0
+#include "RemoteClient.h"
 
 class NetworkConnection : public QObject
 {
@@ -61,29 +24,21 @@ class NetworkConnection : public QObject
 		~NetworkConnection();
 		void setPort(int port);
 		int getPort();
-		bool hasClientConnection();
+		void setClientName(QString name);
 		bool isServerOpen();
 		bool startServer();
 		bool stopServer();
-		bool connectToClient(QString host, int port = DEFAULT_PORT);
-		bool disconnectFromClient();
-		bool sendMessage(unsigned int type, QByteArray data);
 
 	public slots:
 		void newConnection();
-		void dataResceived();
-		void disconnected();
 
 	signals:
-		void messageRecived(QString, int, int);
-		void disconnectedFromHost();
-		void connectedToHost();
+		void incommingConnection(RemoteClient*);
 
 	protected:
 		QTcpServer m_tcpServer;
-		QTcpSocket* m_tcpSocket;
 		unsigned int m_port;
-		QString  m_hostname;
+		QString  m_clientName;
 		bool m_server;
 };
 

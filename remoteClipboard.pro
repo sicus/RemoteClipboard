@@ -10,9 +10,9 @@ DESTDIR = bin/
 QT      += network
 
 # Input
-HEADERS += MainWindow.h NetworkConnection.h global.h
-FORMS += gui/ConnectDlg.ui gui/MainWindow.ui gui/StartServerDlg.ui
-SOURCES += main.cpp MainWindow.cpp NetworkConnection.cpp
+HEADERS += MainWindow.h NetworkConnection.h global.h RemoteClient.h
+FORMS += gui/ConnectDlg.ui gui/MainWindow.ui gui/StartServerDlg.ui gui/ClientTab.ui gui/About.ui
+SOURCES += main.cpp MainWindow.cpp NetworkConnection.cpp RemoteClient.cpp
 
 OBJECTS_DIR = obj/
 MOC_DIR = generatedfiles/

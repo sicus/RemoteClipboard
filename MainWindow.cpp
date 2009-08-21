@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	m_hostname = "Unknown";
 	m_idSend = false;
 	m_server = false;
+	m_connectionCount = 0;
+
+	m_timer.setInterval(500);
 
 	m_serverDlgUi.setupUi(&m_serverDlg);
 	m_connectDlgUi.setupUi(&m_connectDlg);
@@ -27,22 +30,52 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 		m_mw->LocalSelectionTitle->hide();
 	}
 
+	m_mw->actionDisconnect_from_Server->setDisabled(true);
+
+	connect(m_mw->action_About,SIGNAL(triggered()),this,SLOT(about()));
+	
 	connect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
 	connect(m_mw->actionStart_Server,SIGNAL(triggered()),this,SLOT(startServer()));
 	connect(m_mw->actionS_top_Server,SIGNAL(triggered()),this,SLOT(stopServer()));
 	connect(m_mw->action_Connect_to_Server,SIGNAL(triggered()),this,SLOT(connectHost()));
-	connect(m_mw->actionDisconnect_from_Server,SIGNAL(triggered()),this,SLOT(disconnectHost()));
-	connect(m_mw->CopySelectionButton,SIGNAL(clicked()),this,SLOT(copySelectionToClipboard()));
-	connect(m_mw->CopyClipboardButton,SIGNAL(clicked()),this,SLOT(copyClipboardToClipboard()));
 
-	connect(&m_nc,SIGNAL(disconnectedFromHost()),this,SLOT(disconnected()));
-	connect(&m_nc,SIGNAL(connectedToHost()),this,SLOT(connected()));
+	connect(&m_nc,SIGNAL(incommingConnection(RemoteClient*)),this,SLOT(connected(RemoteClient*)));
+
+	connect(&m_timer,SIGNAL(timeout()),this,SLOT(removeDeleted()));
+	connect(m_mw->ClientTabs,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
+	m_timer.start();
 }
 
 MainWindow::~MainWindow()
 {
 	disconnect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
-	m_clipboard = NULL;
+	disconnect(&m_timer,SIGNAL(timeout()),this,SLOT(removeDeleted()));
+	m_timer.stop();
+	RemoteClient* rc;
+
+	for(int i=0;i<m_clientList.size();i++)
+	{
+		rc = m_clientList.value(i);
+		rc->disconnectFromClient();
+	}
+	m_nc.stopServer();
+	removeDeleted();
+}
+
+void MainWindow::closeTab(int idx)
+{
+	RemoteClient* rc = NULL;
+	QWidget* wid = m_mw->ClientTabs->widget(idx);
+	for(int i=0;i<m_clientList.size();i++)
+	{
+		if(m_clientList.value(i)->getWidget() == wid)
+		{
+			rc = m_clientList.value(i);
+			break;
+		}
+	}
+	if(rc != NULL && !strcmp(rc->metaObject()->className(),"RemoteClient"))
+		rc->disconnectFromClient();
 }
 
 void MainWindow::clipboardChanged(QClipboard::Mode mode)
@@ -52,12 +85,10 @@ void MainWindow::clipboardChanged(QClipboard::Mode mode)
 	if(mode == QClipboard::Clipboard)
 	{
 		textEdit = m_mw->LocalClipboard;
-		m_nc.sendMessage(TT_CLIPBOARD_ENTRY,text);
 	}
 	else if(mode == QClipboard::Selection)
 	{
 		textEdit = m_mw->LocalSelection;
-		m_nc.sendMessage(TT_SELECTION_ENTRY,text);
 	}
 	else
 		return;
@@ -91,11 +122,11 @@ void MainWindow::startServer()
 		m_mw->actionS_top_Server->setDisabled(false);
 
 		m_nc.setPort(port);
+		m_nc.setClientName(m_hostname);
 
 		if(m_nc.startServer())
 		{
 			m_mw->ServerLabel->setText("Server: Running");
-			connect(&m_nc,SIGNAL(messageRecived(QString,int,int)),this,SLOT(messageRecived(QString,int,int)));
 			m_server = true;
 		}
 		else
@@ -124,11 +155,6 @@ void MainWindow::connectHost()
 	
 	if(m_connectDlg.exec() == QDialog::Accepted)
 	{
-		m_hostname = m_connectDlgUi.ClientnameLE->text();
-		QString host = m_connectDlgUi.HostLE->text();
-		if(m_hostname.size() <= 0)
-			m_hostname = "Unknown";
-
 		if(m_connectDlgUi.PortLE->text().isEmpty())
 			port = DEFAULT_PORT;
 		else
@@ -138,84 +164,88 @@ void MainWindow::connectHost()
 			if(!ok)
 				port = DEFAULT_PORT;
 		}
+		
+		m_hostname = m_connectDlgUi.ClientnameLE->text();
+		QString host = m_connectDlgUi.HostLE->text();
+		if(m_hostname.size() <= 0)
+			m_hostname = "Unknown";
 
-		if(m_nc.connectToClient(host,port))
+		RemoteClient* rc = new RemoteClient();
+		rc->setClientName(m_hostname);
+		rc->connectToClient(host,port);
+		m_clientList.append(rc);
+		connect(rc,SIGNAL(remoteNameChanged(QString)),this,SLOT(remoteHostNameChanged(QString)));
+		connect(rc,SIGNAL(connectionClosed()),this,SLOT(disconnected()));
+		if(m_connectionCount == 0)
 		{
-			m_mw->action_Connect_to_Server->setDisabled(true);
-			m_mw->actionDisconnect_from_Server->setDisabled(false);
-			m_mw->actionStart_Server->setDisabled(true);
-			m_mw->actionS_top_Server->setDisabled(true);
-			connect(&m_nc,SIGNAL(messageRecived(QString,int,int)),this,SLOT(messageRecived(QString,int,int)));
-			m_nc.sendMessage(TT_LOGIN,m_hostname.toLocal8Bit());
-			m_idSend = true;
+			m_mw->ClientTabs->addTab(rc->getWidget(),rc->getRemoteName());
+			m_mw->ClientTabs->removeTab(0);
+			m_connectionCount++;
 		}
-	}
-}
-
-void MainWindow::disconnectHost()
-{
-	disconnect(&m_nc,SIGNAL(messageRecived(QString,int,int)),this,SLOT(messageRecived(QString,int,int)));
-	m_nc.disconnectFromClient();
-}
-
-void MainWindow::messageRecived(QString data, int type, int os)
-{
-	if(type == TT_LOGIN)
-	{
-		m_mw->RemoteTextLabel->setText("Remote Host: "+data);
-		if(m_idSend == false)
+		else
 		{
-			m_nc.sendMessage(TT_LOGIN,m_hostname.toLocal8Bit());
+			m_mw->ClientTabs->addTab(rc->getWidget(),rc->getRemoteName());
+			m_connectionCount++;
 		}
-
-		if(os == OS_WIN32)
-		{
-			m_mw->RemoteSelection->hide();
-			m_mw->RemoteSelectionTitle->hide();
-		}
-	}
-	else if(type == TT_CLIPBOARD_ENTRY)
-	{
-		m_mw->RemoteClipboard->setText(data);
-	}
-	else if(type == TT_SELECTION_ENTRY)
-	{
-		m_mw->RemoteSelection->setText(data);
 	}
 }
 
 void MainWindow::disconnected()
 {
-	m_mw->action_Connect_to_Server->setDisabled(m_server);
-	m_mw->actionDisconnect_from_Server->setDisabled(true);
-	m_mw->actionStart_Server->setDisabled(m_server);
-	m_mw->actionS_top_Server->setDisabled(!m_server);
-	
-	m_mw->RemoteTextLabel->setText("Remote Host");
-	m_idSend = false;
-	m_mw->RemoteSelection->show();
-	m_mw->RemoteSelectionTitle->show();
-	m_mw->CopyClipboardButton->setEnabled(false);
-	m_mw->CopySelectionButton->setEnabled(false);
+	RemoteClient* rc = (RemoteClient*)sender();
+	m_closedClientList.append(rc);
 }
 
-void MainWindow::connected()
+void MainWindow::removeDeleted()
 {
-	m_mw->CopyClipboardButton->setEnabled(true);
-	m_mw->CopySelectionButton->setEnabled(true);
-
-	m_mw->action_Connect_to_Server->setDisabled(true);
-	m_mw->actionDisconnect_from_Server->setDisabled(false);
-	m_mw->actionStart_Server->setDisabled(true);
-	m_mw->actionS_top_Server->setDisabled(true);
+	int idx;
+	RemoteClient* rc;
+	while(m_closedClientList.size()>0)
+	{
+		rc = m_closedClientList.takeFirst();
+		idx = m_clientList.indexOf(rc);
+		m_clientList.removeAt(idx);
+		m_connectionCount--;
+		if(m_connectionCount <= 0)
+		{
+			m_connectionCount = 0;
+			m_mw->ClientTabs->addTab(new QWidget(),"No Connection");
+		}
+		m_mw->ClientTabs->removeTab(m_mw->ClientTabs->indexOf(rc->getWidget()));
+		delete rc;
+	}
+	m_timer.start();
 }
 
-void MainWindow::copySelectionToClipboard()
+void MainWindow::remoteHostNameChanged(QString name)
 {
-	m_clipboard->setText(m_mw->RemoteSelection->toPlainText());
+	int idx = m_mw->ClientTabs->indexOf( ((RemoteClient*)sender())->getWidget() );
+	m_mw->ClientTabs->setTabText(idx,name);
 }
 
-void MainWindow::copyClipboardToClipboard()
+void MainWindow::connected(RemoteClient* rc)
 {
-	m_clipboard->setText(m_mw->RemoteClipboard->toPlainText());
+	connect(rc,SIGNAL(remoteNameChanged(QString)),this,SLOT(remoteHostNameChanged(QString)));
+	connect(rc,SIGNAL(connectionClosed()),this,SLOT(disconnected()));
+	m_clientList.append(rc);
+	if(m_connectionCount == 0)
+	{
+		m_mw->ClientTabs->addTab(rc->getWidget(),rc->getRemoteName());
+		m_mw->ClientTabs->removeTab(0);
+		m_connectionCount++;
+	}
+	else
+	{
+		m_mw->ClientTabs->addTab(rc->getWidget(),rc->getRemoteName());
+		m_connectionCount++;
+	}
 }
+
+void MainWindow::about()
+{
+	QDialog dlg;
+	Ui::AboutDialog adlg;
+	adlg.setupUi(&dlg);
+	dlg.exec();
+}
+
