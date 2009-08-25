@@ -15,6 +15,7 @@
 
 #include "global.h"
 #include "ui_ClientTab.h"
+#include "ClipboardPublicControl.h"
 
 class RemoteClient : public QObject
 {

@@ -17,7 +17,10 @@ RemoteClient::RemoteClient(QObject* parent) : QObject(parent)
 	m_remoteName = "Unknown";
 	m_clientWidget = new Ui::ClientTab();
 	m_clientWidget->setupUi(&m_widget);
-	connect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
+
+	ClipboardPublicControl* cpc = ClipboardPublicControl::getInstance();
+	
+	connect(cpc,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
 	connect(m_clientWidget->CopyClipboardButton,SIGNAL(clicked()),this,SLOT(copyRemoteClipboard()));
 	connect(m_clientWidget->CopySelectionButton,SIGNAL(clicked()),this,SLOT(copyRemoteSelection()));
 }

@@ -12,12 +12,12 @@
 #include <QSettings>
 #include <QDir>
 #include "global.h"
+#include "ClipboardPublicControl.h"
 
 class RCSettings
 {
 	public:
 		static RCSettings* getInstance();
-		void loadSettings();
 		QString getClientName();
 		int getPort();
 		bool getSslOnly();
@@ -29,9 +29,10 @@ class RCSettings
 
 	protected:
 		RCSettings();
+		void loadSettings();
 		QString m_clientName;
-		int m_port;
-		bool m_sslOnly;
+		int     m_port;
+		bool    m_sslOnly;
 		QString m_settingsFile;
 };
 

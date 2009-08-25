@@ -21,6 +21,7 @@
 #include "NetworkConnection.h"
 #include "RemoteClient.h"
 #include "RCSettings.h"
+#include "ClipboardPublicControl.h"
 
 #include "ui_MainWindow.h"
 #include "ui_ConnectDlg.h"

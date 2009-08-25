@@ -64,20 +64,26 @@ void RCSettings::setSslOnly(bool ssl)
 
 void RCSettings::loadSettings()
 {
+	ClipboardPublicControl* cpc = ClipboardPublicControl::getInstance();
 	QSettings settings(m_settingsFile,QSettings::IniFormat);
 	settings.beginGroup("ClientSettings");
 	m_clientName = settings.value("ClientName","Unknown").toString();
 	m_port = settings.value("Port",DEFAULT_PORT).toInt();
 	m_sslOnly = settings.value("SSL",false).toBool();
+	cpc->setSelectionPublic(settings.value("SelectionPublic",false).toBool());
+	cpc->setClipboardPublic(settings.value("ClipboardPublic",false).toBool());
 	settings.endGroup();
 }
 
 void RCSettings::saveSettings()
 {
 	QSettings settings(m_settingsFile,QSettings::IniFormat);
+	ClipboardPublicControl* cpc = ClipboardPublicControl::getInstance();
 	settings.beginGroup("ClientSettings");
 	settings.setValue("ClientName",m_clientName);
 	settings.setValue("Port",m_port);
 	settings.setValue("SSL",m_sslOnly);
+	settings.setValue("SelectionPublic",cpc->getSelectionPublic());
+	settings.setValue("ClipboardPublic",cpc->getClipboardPublic());
 	settings.endGroup();
 }

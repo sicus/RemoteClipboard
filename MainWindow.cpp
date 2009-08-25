@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	m_idSend = false;
 	m_server = false;
 	m_connectionCount = 0;
+
+	RCSettings* settings = RCSettings::getInstance();
+	ClipboardPublicControl* cpc = ClipboardPublicControl::getInstance();
 	
 	m_timer.setInterval(500);
 
@@ -26,17 +29,30 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	{
 		m_mw->LocalSelection->hide();
 		m_mw->LocalSelectionTitle->hide();
+		m_mw->SelectionPublic->hide();
 	}
+
+	if(cpc->getClipboardPublic())
+		m_mw->ClipboardPublic->setChecked(true);
+	else
+		m_mw->ClipboardPublic->setChecked(false);
+	
+	if(cpc->getSelectionPublic())
+		m_mw->SelectionPublic->setChecked(true);
+	else
+		m_mw->SelectionPublic->setChecked(false);
 
 	m_mw->actionDisconnect_from_Server->setDisabled(true);
 
 	connect(m_mw->action_About,SIGNAL(triggered()),this,SLOT(about()));
 	
-	connect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
+	connect(cpc,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
 	connect(m_mw->actionStart_Server,SIGNAL(triggered()),this,SLOT(startServer()));
 	connect(m_mw->actionS_top_Server,SIGNAL(triggered()),this,SLOT(stopServer()));
 	connect(m_mw->action_Connect_to_Server,SIGNAL(triggered()),this,SLOT(connectHost()));
 	connect(m_mw->actionS_ettings,SIGNAL(triggered()),this,SLOT(settings()));
+	connect(m_mw->ClipboardPublic,SIGNAL(stateChanged(int)),cpc,SLOT(clipboardPubChanged(int)));
+	connect(m_mw->SelectionPublic,SIGNAL(stateChanged(int)),cpc,SLOT(selectionPubChanged(int)));
 
 	connect(&m_nc,SIGNAL(incommingConnection(RemoteClient*)),this,SLOT(connected(RemoteClient*)));
 

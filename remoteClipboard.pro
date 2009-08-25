@@ -12,13 +12,13 @@ QT      += network
 
 
 # Input
-HEADERS += global.h MainWindow.h NetworkConnection.h RemoteClient.h RCSettings.h
+HEADERS += global.h MainWindow.h NetworkConnection.h RemoteClient.h RCSettings.h ClipboardPublicControl.h
 FORMS += gui/About.ui \
          gui/ClientTab.ui \
          gui/ConnectDlg.ui \
          gui/MainWindow.ui \
          gui/SettingsDlg.ui
-SOURCES += main.cpp MainWindow.cpp NetworkConnection.cpp RemoteClient.cpp RCSettings.cpp
+SOURCES += main.cpp MainWindow.cpp NetworkConnection.cpp RemoteClient.cpp RCSettings.cpp ClipboardPublicControl.cpp
 RESOURCES += icons.qrc
 
 OBJECTS_DIR = obj/
