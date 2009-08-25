@@ -20,10 +20,11 @@
 #include "global.h"
 #include "NetworkConnection.h"
 #include "RemoteClient.h"
+#include "RCSettings.h"
 
 #include "ui_MainWindow.h"
 #include "ui_ConnectDlg.h"
-#include "ui_StartServerDlg.h"
+#include "ui_SettingsDlg.h"
 #include "ui_About.h"
 
 
@@ -45,6 +46,7 @@ class MainWindow : public QMainWindow
 		void removeDeleted();
 		void about();
 		void closeTab(int idx);
+		void settings();
 
 	protected:
 		Ui::MainWindow*      m_mw;
@@ -52,12 +54,10 @@ class MainWindow : public QMainWindow
 		QList<RemoteClient*> m_clientList;
 		QList<RemoteClient*> m_closedClientList;
 		QClipboard*          m_clipboard;
-		QString              m_hostname;
 		bool                 m_idSend;
 		bool                 m_server;
 		QTimer               m_timer;
 
-		Ui::StartServerDlg   m_serverDlgUi;
 		Ui::ConnectDlg       m_connectDlgUi;
 		QDialog              m_serverDlg;
 		QDialog              m_connectDlg;

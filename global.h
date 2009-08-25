@@ -31,7 +31,7 @@ const unsigned int OPERATING_SYSTEM = OS_UNKNOWN;
 const unsigned char TT_CLIPBOARD_ENTRY = 0;
 const unsigned char TT_SELECTION_ENTRY = 1;
 const unsigned char TT_LOGIN           = 2;
-const unsigned char TT_LOGOUT          = 3;
+const unsigned char TT_IDENTIFY        = 3;
 
 struct RC_ProtocolHeader
 {

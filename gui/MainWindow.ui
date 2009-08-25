@@ -129,7 +129,7 @@
     <addaction name="actionStart_Server"/>
     <addaction name="actionS_top_Server"/>
     <addaction name="action_Connect_to_Server"/>
-    <addaction name="actionDisconnect_from_Server"/>
+    <addaction name="actionS_ettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -217,6 +217,11 @@
    </property>
    <property name="text">
     <string>Disconnect from Server</string>
+   </property>
+  </action>
+  <action name="actionS_ettings">
+   <property name="text">
+    <string>S&amp;ettings</string>
    </property>
   </action>
  </widget>

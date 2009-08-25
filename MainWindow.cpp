@@ -14,14 +14,12 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	m_mw = new Ui::MainWindow;
 	m_mw->setupUi(this);
 	m_clipboard = QApplication::clipboard();
-	m_hostname = "Unknown";
 	m_idSend = false;
 	m_server = false;
 	m_connectionCount = 0;
-
+	
 	m_timer.setInterval(500);
 
-	m_serverDlgUi.setupUi(&m_serverDlg);
 	m_connectDlgUi.setupUi(&m_connectDlg);
 
 	if(OPERATING_SYSTEM == OS_WIN32)
@@ -38,6 +36,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	connect(m_mw->actionStart_Server,SIGNAL(triggered()),this,SLOT(startServer()));
 	connect(m_mw->actionS_top_Server,SIGNAL(triggered()),this,SLOT(stopServer()));
 	connect(m_mw->action_Connect_to_Server,SIGNAL(triggered()),this,SLOT(connectHost()));
+	connect(m_mw->actionS_ettings,SIGNAL(triggered()),this,SLOT(settings()));
 
 	connect(&m_nc,SIGNAL(incommingConnection(RemoteClient*)),this,SLOT(connected(RemoteClient*)));
 
@@ -60,6 +59,9 @@ MainWindow::~MainWindow()
 	}
 	m_nc.stopServer();
 	removeDeleted();
+
+	RCSettings* settings = RCSettings::getInstance();
+	settings->saveSettings();
 }
 
 void MainWindow::closeTab(int idx)
@@ -101,39 +103,24 @@ void MainWindow::startServer()
 {
 	
 	int port;
-	m_serverDlgUi.PortLE->setText(QString::number(DEFAULT_PORT));
-	if(m_serverDlg.exec() == QDialog::Accepted)
+	RCSettings* settings = RCSettings::getInstance();
+	QString hostname = settings->getClientName();
+	port = settings->getPort();
+	m_mw->actionStart_Server->setDisabled(true);
+	m_mw->actionS_top_Server->setDisabled(false);
+
+	m_nc.setPort(port);
+	m_nc.setClientName(hostname);
+
+	if(m_nc.startServer())
 	{
-		m_hostname = m_serverDlgUi.HostnameLE->text();
-		if(m_hostname.size() <= 0)
-			m_hostname = "Unknown";
-
-		if(m_serverDlgUi.PortLE->text().isEmpty())
-			port = DEFAULT_PORT;
-		else
-		{
-			bool ok;
-			port = m_serverDlgUi.PortLE->text().toInt(&ok);
-			if(!ok)
-				port = DEFAULT_PORT;
-		}
-
-		m_mw->actionStart_Server->setDisabled(true);
-		m_mw->actionS_top_Server->setDisabled(false);
-
-		m_nc.setPort(port);
-		m_nc.setClientName(m_hostname);
-
-		if(m_nc.startServer())
-		{
-			m_mw->ServerLabel->setText("Server: Running");
-			m_server = true;
-		}
-		else
-		{
-			QMessageBox::critical(NULL,"Server not started","Server not started");
-			m_mw->ServerLabel->setText("Server: Not Running");
-		}
+		m_mw->ServerLabel->setText("Server: Running");
+		m_server = true;
+	}
+	else
+	{
+		QMessageBox::critical(NULL,"Server not started","Server not started");
+		m_mw->ServerLabel->setText("Server: Not Running");
 	}
 }
 
@@ -151,7 +138,11 @@ void MainWindow::connectHost()
 {
 	int port;
 
-	m_connectDlgUi.PortLE->setText(QString::number(DEFAULT_PORT));
+	RCSettings* settings = RCSettings::getInstance();
+	QString hostname = settings->getClientName();
+	port = settings->getPort();
+
+	m_connectDlgUi.PortLE->setText(QString::number(port));
 	
 	if(m_connectDlg.exec() == QDialog::Accepted)
 	{
@@ -165,13 +156,10 @@ void MainWindow::connectHost()
 				port = DEFAULT_PORT;
 		}
 		
-		m_hostname = m_connectDlgUi.ClientnameLE->text();
 		QString host = m_connectDlgUi.HostLE->text();
-		if(m_hostname.size() <= 0)
-			m_hostname = "Unknown";
 
 		RemoteClient* rc = new RemoteClient();
-		rc->setClientName(m_hostname);
+		rc->setClientName(hostname);
 		rc->connectToClient(host,port);
 		m_clientList.append(rc);
 		connect(rc,SIGNAL(remoteNameChanged(QString)),this,SLOT(remoteHostNameChanged(QString)));
@@ -247,5 +235,30 @@ void MainWindow::about()
 	Ui::AboutDialog adlg;
 	adlg.setupUi(&dlg);
 	dlg.exec();
+}
+
+void MainWindow::settings()
+{
+	QDialog dlg;
+	Ui::SettingsDlg settingsDlgUi;
+	settingsDlgUi.setupUi(&dlg);
+	RCSettings* settings = RCSettings::getInstance();
+	settingsDlgUi.ClientNameLE->setText(settings->getClientName());
+	settingsDlgUi.PortLE->setText(QString::number(settings->getPort()));
+	if(settings->getSslOnly())
+		settingsDlgUi.SslCB->setChecked(true);
+	else
+		settingsDlgUi.SslCB->setChecked(false);
+	if(dlg.exec() == QDialog::Accepted)
+	{
+		bool ok;
+		settings->setClientName(settingsDlgUi.ClientNameLE->text());
+		int port = settingsDlgUi.PortLE->text().toInt(&ok);
+		if(ok)
+			settings->setPort(port);
+		else
+			settings->setPort(DEFAULT_PORT);
+		settings->setSslOnly(settingsDlgUi.SslCB->isChecked());
+	}
 }
 
