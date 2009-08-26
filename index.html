@@ -68,16 +68,27 @@ RemoteClipboard works on Windows and on Linux Computers, is a client running on 
 
     <h2>Download</h2>
     <p>
-      You can download this project (source) in either
-      <a href="http://github.com/sicus/RemoteClipboard/zipball/master">zip</a> or
-      <a href="http://github.com/sicus/RemoteClipboard/tarball/master">tar</a> formats.
-      <br>You can download Windows Binaries here:<br>
-      <a href="http://cloud.github.com/downloads/sicus/RemoteClipboard/libs-win32.rar">Librarys (Needed to run in Windows)</a>
-      <a href="http://cloud.github.com/downloads/sicus/RemoteClipboard/RemoteClipboard-beta2-Win32.rar">Beta2 Windows Build</a>
-      <br>For Linux just download the Sourcecode and run:<br>
+    <table border=1>
+    <tr>
+    <th>Operating System</th>
+    <th>Download</th>
+    <th>Libs></th>
+    </tr>
+    <tr>
+    <td>Linux (Sourcecode)</td>
+    <td><a href="http://github.com/sicus/RemoteClipboard/zipball/master">zip</a> <a href="http://github.com/sicus/RemoteClipboard/tarball/master">tar</a></td>
+    <td>Qt 4.5 or higher</td>
+    </tr>
+    <tr>
+    <td>Windows</td>
+    <td><a href="http://cloud.github.com/downloads/sicus/RemoteClipboard/RemoteClipboard-beta2-Win32.rar">Beta2 Windows Build</a></td>
+    <td><a href="http://cloud.github.com/downloads/sicus/RemoteClipboard/libs-win32.rar">Librarys</a></td>
+    </tr>
+    </table>
+    <br><br>To Build from Sourcecode just run:<br>
       <i>qmake -makefile<br>
-      make</i><br>
-      You need the Qt 4.5 Library installed
+      make</i><br><br>
+      You need the Qt 4.5 Library installed, for Windows you need also MinGW32 with g++ and make
     </p>
     <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
       by running:
