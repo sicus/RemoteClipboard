@@ -1,0 +1,7 @@
+*.[oa]
+*~
+qrc_*
+
+bin
+generatedfiles
+obj

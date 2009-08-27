@@ -47,6 +47,8 @@ void RemoteClient::disconnectFromClient()
 {
 	disconnect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
 	disconnect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+	disconnect(m_tcpSocket,SIGNAL(connected()),this,SLOT(connected()));
+	disconnect(m_tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
 	if(m_tcpSocket)
 	{
 		if(m_tcpSocket->isOpen())
@@ -74,7 +76,6 @@ void RemoteClient::dataResceived()
 	static RC_ProtocolHeader header;
 	static unsigned int bytesRead = 0;
 	static QString data;
-	fflush(stdout);
 	if(!m_tcpSocket)
 		return;
 
@@ -171,56 +172,65 @@ void RemoteClient::sendMessage(QByteArray data, int type)
 	toSend.append(data);
 	m_tcpSocket->write(toSend.data(),toSend.size());
 	m_tcpSocket->flush();
-	fflush(stdout);
 	return;
 }
 
-bool RemoteClient::connectToClient(QString host, int port)
+void RemoteClient::connectToClient(QString host, int port)
 {
 	if(host.isEmpty())
-		return false;
+		return;
 
 	if(!m_tcpSocket)
 	{
 		m_tcpSocket = new QTcpSocket();
 		m_tcpSocket->connectToHost(host,port);
-		if(!m_tcpSocket->waitForConnected())
-		{
-			if(m_tcpSocket && m_tcpSocket->isOpen())
-				m_tcpSocket->close();
-			disconnect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
-			disconnect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-			delete m_tcpSocket;
-			m_tcpSocket = NULL;
-			return false;
-		}
-		else
-		{
-			if(m_tcpSocket->open(QIODevice::ReadWrite))
-			{
-				connect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
-				connect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-				sendMessage(m_clientName.toLocal8Bit(),TT_LOGIN);
-				m_identificationSend = true;
-				return true;
-			}
-			else
-			{
-				if(m_tcpSocket->isOpen())
-					m_tcpSocket->close();
-				delete m_tcpSocket;
-				m_tcpSocket = NULL;
-			}
-		}
+		connect(m_tcpSocket,SIGNAL(connected()),this,SLOT(connected()));
+		connect(m_tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
 	}
+	return;
+}
 
-	return false;
+void RemoteClient::connected()
+{
+	disconnect(m_tcpSocket,SIGNAL(connected()),this,SLOT(connected()));
+	if(m_tcpSocket->open(QIODevice::ReadWrite))
+	{
+		connect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
+		sendMessage(m_clientName.toLocal8Bit(),TT_LOGIN);
+		m_identificationSend = true;
+	}
+	else
+	{
+		disconnected();
+	}
+}
+
+void RemoteClient::socketError(QAbstractSocket::SocketError socketError)
+{
+	if(m_tcpSocket)
+	{
+		disconnect(m_tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
+		if(m_tcpSocket->error() == QAbstractSocket::HostNotFoundError)
+		{
+			QMessageBox::warning(NULL,"Host not Found","Host \""+m_tcpSocket->peerName()+"\" not found");
+		}
+		else if(m_tcpSocket->error() == QAbstractSocket::RemoteHostClosedError)
+		{
+			QMessageBox::warning(NULL,"Connection Closed","Host \""+m_tcpSocket->peerName()+"\" ("+m_remoteName+") Closed Connection");
+		}
+		disconnect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
+		disconnect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+		disconnect(m_tcpSocket,SIGNAL(connected()),this,SLOT(connected()));
+		disconnect(m_tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
+		disconnect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
+		emit connectionClosed();
+	}
 }
 
 void RemoteClient::setSocket(QTcpSocket* socket)
 {
 	m_tcpSocket = socket;
 	connect(m_tcpSocket,SIGNAL(readyRead()),this,SLOT(dataResceived()));
-	connect(m_tcpSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+	connect(m_tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(socketError(QAbstractSocket::SocketError)));
 }
 

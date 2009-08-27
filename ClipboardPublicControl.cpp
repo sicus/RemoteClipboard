@@ -11,7 +11,8 @@
 ClipboardPublicControl::ClipboardPublicControl()
 {
 	QClipboard *clip = QApplication::clipboard();
-	connect(clip,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
+	connect(clip,SIGNAL(dataChanged()),this,SLOT(dataChanged()));
+	connect(clip,SIGNAL(selectionChanged()),this,SLOT(selectionChanged()));
 }
 
 ClipboardPublicControl* ClipboardPublicControl::getInstance()
@@ -61,3 +62,14 @@ void ClipboardPublicControl::selectionPubChanged(int state)
 	else
 		setSelectionPublic(false);
 }
+
+void ClipboardPublicControl::dataChanged()
+{
+ 	clipboardChanged(QClipboard::Clipboard);
+}
+
+void ClipboardPublicControl::selectionChanged()
+{
+	clipboardChanged(QClipboard::Selection);
+}
+

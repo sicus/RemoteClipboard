@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 
 	RCSettings* settings = RCSettings::getInstance();
 	ClipboardPublicControl* cpc = ClipboardPublicControl::getInstance();
+	settings->getPort();
+
 	
 	m_timer.setInterval(500);
 
@@ -47,6 +49,7 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 	connect(m_mw->action_About,SIGNAL(triggered()),this,SLOT(about()));
 	
 	connect(cpc,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
+	
 	connect(m_mw->actionStart_Server,SIGNAL(triggered()),this,SLOT(startServer()));
 	connect(m_mw->actionS_top_Server,SIGNAL(triggered()),this,SLOT(stopServer()));
 	connect(m_mw->action_Connect_to_Server,SIGNAL(triggered()),this,SLOT(connectHost()));
@@ -63,7 +66,6 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 
 MainWindow::~MainWindow()
 {
-	disconnect(m_clipboard,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
 	disconnect(&m_timer,SIGNAL(timeout()),this,SLOT(removeDeleted()));
 	m_timer.stop();
 	RemoteClient* rc;

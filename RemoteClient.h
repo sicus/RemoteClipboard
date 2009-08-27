@@ -12,6 +12,7 @@
 #include <QTcpSocket>
 #include <QWidget>
 #include <QClipboard>
+#include <QMessageBox>
 
 #include "global.h"
 #include "ui_ClientTab.h"
@@ -27,7 +28,7 @@ class RemoteClient : public QObject
 		void setClientName(QString name);
 		QString getRemoteName();
 		void sendMessage(QByteArray data, int type);
-		bool connectToClient(QString host, int port);
+		void connectToClient(QString host, int port);
 		void setSocket(QTcpSocket* socket);
 
 	public slots:
@@ -36,6 +37,8 @@ class RemoteClient : public QObject
 		void copyRemoteClipboard();
 		void copyRemoteSelection();
 		void clipboardChanged(QClipboard::Mode);
+		void connected();
+		void socketError(QAbstractSocket::SocketError);
 
 	signals:
 		void connectionClosed();

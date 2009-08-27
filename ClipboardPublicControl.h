@@ -11,6 +11,7 @@
 
 #include <QClipboard>
 #include <QApplication>
+#include <QMessageBox>
 
 class ClipboardPublicControl : public QObject
 {
@@ -26,6 +27,9 @@ class ClipboardPublicControl : public QObject
 		void clipboardChanged(QClipboard::Mode);
 		void clipboardPubChanged(int);
 		void selectionPubChanged(int);
+		
+		void dataChanged();
+		void selectionChanged();
 
 	signals:
 		void changed(QClipboard::Mode);

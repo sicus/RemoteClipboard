@@ -62,7 +62,6 @@ class MainWindow : public QMainWindow
 		Ui::ConnectDlg       m_connectDlgUi;
 		QDialog              m_serverDlg;
 		QDialog              m_connectDlg;
-
 		int                  m_connectionCount;
 };
 
