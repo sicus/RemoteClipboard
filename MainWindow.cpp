@@ -11,6 +11,15 @@
 
 MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(parent,flags)
 {
+	m_tray = new QSystemTrayIcon(this);
+	QPixmap pxm(QString::fromUtf8(":/icons/programmicon"));
+	QIcon picon(pxm);
+	m_tray->setIcon(picon);
+	m_tray->setToolTip("Remote Clipboard");
+	m_tray->show();
+
+	m_hidden = false;
+	
 	m_mw = new Ui::MainWindow;
 	m_mw->setupUi(this);
 	m_clipboard = QApplication::clipboard();
@@ -46,6 +55,8 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags flags) : QMainWindow(pa
 
 	m_mw->actionDisconnect_from_Server->setDisabled(true);
 
+
+	connect(m_tray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(trayAction(QSystemTrayIcon::ActivationReason)));
 	connect(m_mw->action_About,SIGNAL(triggered()),this,SLOT(about()));
 	
 	connect(cpc,SIGNAL(changed(QClipboard::Mode)),this,SLOT(clipboardChanged(QClipboard::Mode)));
@@ -277,6 +288,23 @@ void MainWindow::settings()
 		else
 			settings->setPort(DEFAULT_PORT);
 		settings->setSslOnly(settingsDlgUi.SslCB->isChecked());
+	}
+}
+
+void MainWindow::trayAction(QSystemTrayIcon::ActivationReason reason)
+{
+	if(reason == QSystemTrayIcon::Trigger)
+	{
+		if(m_hidden)
+		{
+			show();
+			m_hidden = false;
+		}
+		else
+		{
+			hide();
+			m_hidden = true;
+		}
 	}
 }
 

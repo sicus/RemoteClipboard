@@ -3,6 +3,6 @@
     <file>icons/connect.png</file>
     <file>icons/startserver.png</file>
     <file>icons/stopserver.png</file>
-    <file>icons/programmicon.png</file>
+    <file alias="programmicon" >icons/programmicon.png</file>
   </qresource>
 </RCC>

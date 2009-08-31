@@ -16,6 +16,8 @@
 #include <QDialog>
 #include <QMessageBox>
 #include <QTimer>
+#include <QSystemTrayIcon>
+#include <QIcon>
 
 #include "global.h"
 #include "NetworkConnection.h"
@@ -49,7 +51,10 @@ class MainWindow : public QMainWindow
 		void closeTab(int idx);
 		void settings();
 
+		void trayAction(QSystemTrayIcon::ActivationReason reason);
+
 	protected:
+		QSystemTrayIcon*     m_tray;
 		Ui::MainWindow*      m_mw;
 		NetworkConnection    m_nc;
 		QList<RemoteClient*> m_clientList;
@@ -58,6 +63,7 @@ class MainWindow : public QMainWindow
 		bool                 m_idSend;
 		bool                 m_server;
 		QTimer               m_timer;
+		bool                 m_hidden;
 
 		Ui::ConnectDlg       m_connectDlgUi;
 		QDialog              m_serverDlg;
